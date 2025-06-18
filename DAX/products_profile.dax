@@ -1,0 +1,117 @@
+EVALUATE
+products
+
+//Show the most expensive and the least expensive products
+EVALUATE
+	VAR maxprice =
+	    MAXX ( products, products[Product_Price] )
+	VAR minprice =
+	    MINX ( products, products[Product_Price] )
+	VAR tablemax =
+	    CALCULATETABLE ( products, products[Product_Price] = maxprice )
+	VAR tablemin =
+	    CALCULATETABLE ( products, products[Product_Price] = minprice )
+RETURN
+    UNION ( tablemax, tablemin )
+
+// Find the Maximum price at the products table
+EVALUATE
+VAR tabless = 
+ADDCOLUMNS(
+	SUMMARIZE( products, products[Product_Price] ),
+		"nproducts", CALCULATE( COUNTROWS( products ) ) 
+)
+VAR maxxx = MAXX( tabless, [nproducts] )
+VAR pricemax = SELECTCOLUMNS( filter (tabless, [nproducts] = maxxx ), products[Product_Price] )
+
+RETURN
+-- ROW( "maximos", maxxx )
+pricemax
+
+// Table Resume
+DEFINE
+	VAR productsperprice = 
+	ADDCOLUMNS(
+		SUMMARIZE(
+			products, products[Product_Price] ),
+			"nproducts", CALCULATE( COUNTROWS( products ) ) 
+	)
+	VAR maxxx = MAXX( productsperprice, [nproducts] )
+	VAR pricemax = SELECTCOLUMNS( filter (productsperprice, [nproducts] = maxxx ), products[Product_Price] )
+	
+	VAR maxprice = MAXX(products, products[Product_Price] )
+	VAR avgprice = AVERAGEX(products, products[Product_Price] )
+	VAR avgcost = AVERAGEX(products, products[Product_Cost] )
+	VAR tabless = CALCULATETABLE( products, products[Product_Price] = maxprice )
+	VAR productsoveravg = CALCULATETABLE( products, FILTER( ALL( products[Product_Price] ), products[Product_Price] >= avgprice ) )
+
+EVALUATE
+	ROW( 
+		"# Products", COUNTROWS( products ),
+		"# Products names", COUNTROWS( DISTINCT( products[Product_Name] ) ),
+		"# Categories", COUNTROWS( DISTINCT(products[Product_Category] ) ),
+		"avg cost of a product", avgcost,
+		"avg price of a product", avgprice,
+		"most expensive price" , MAXX(products, products[Product_Price] ), 
+		"most expensive product", CALCULATE( SELECTEDVALUE(products[Product_Name],"--"), tabless),
+		 "# product over avg cost", COUNTROWS( productsoveravg ),
+		 "most used price", CALCULATE( SELECTEDVALUE(products[Product_Price],"--"), pricemax)
+		 )
+
+
+-- LIST PRODUCTS Price Over the Avg - 17 Products
+DEFINE
+    VAR avgprice =
+        AVERAGEX (
+            products,
+            products[Product_Price]
+        )
+    VAR productsoveravg =
+        CALCULATETABLE (
+            SELECTCOLUMNS (
+                products,
+                "Prod ID", products[Product_ID],
+                "Prod name", products[Product_Name],
+                "@prodprice", products[Product_Price]
+            ),
+            FILTER (
+                ALL ( products[Product_Price] ),
+                products[Product_Price] >= avgprice
+            )
+        )
+
+EVALUATE
+	productsoveravg
+	ORDER BY [@prodprice] DESC
+
+
+-- LIST PRODUCTS most used price - 5 Products
+DEFINE
+    VAR productsperprice =
+        ADDCOLUMNS (
+            SUMMARIZE ( products, products[Product_Price] ),
+            "nproducts", CALCULATE ( COUNTROWS ( products ) )
+        )
+    VAR maxxx =
+        MAXX ( productsperprice, [nproducts] )
+    VAR pricemax =
+        SELECTCOLUMNS (
+            FILTER ( productsperprice, [nproducts] = maxxx ),
+            products[Product_Price]
+        )
+    VAR maxprice =
+        MAXX ( products, products[Product_Price] )
+    VAR product_list =
+        CALCULATETABLE (
+            SELECTCOLUMNS (
+                products,
+                "Prod ID", products[Product_ID],
+                "Prod name", products[Product_Name],
+                "@prodprice", products[Product_Price]
+            ),
+            FILTER ( ALL ( products[Product_Price] ), products[Product_Price] = pricemax )
+        )
+
+EVALUATE
+product_list
+ORDER BY [Prod name]
