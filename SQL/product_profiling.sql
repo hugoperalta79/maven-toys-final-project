@@ -66,11 +66,11 @@
         
         -- List of the product that have the most used price:
             With CountPrices as (
-			SELECT Product_Price, count(*) as Nproducts ,
-            dense_rank() over(order by count(*) desc) as ranking
-            FROM maven_toys.products
-            GROUP BY 1
-            )
-		SELECT mtp.Product_Name
+				SELECT Product_Price, count(*) as Nproducts ,
+				dense_rank() over(order by count(*) desc) as ranking
+				FROM maven_toys.products
+				GROUP BY 1
+				)
+		SELECT mtp.Product_Name, mtp.Product_Price
          FROM maven_toys.products mtp
         where mtp.Product_Price = (SELECT Product_Price  FROM CountPrices WHERE ranking = 1);
