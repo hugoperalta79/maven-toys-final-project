@@ -1,5 +1,3 @@
-SELECT * FROM maven_toys.stores;
-
 
 -- 3 ) Understand structure of: SALES
 
@@ -74,7 +72,7 @@ SELECT
 				left join stores st on sl.Store_ID = st.Store_ID
 				left join products p on sl.Product_ID = p.Product_ID
 				) as totalsales
-			GROUP BY 1
+			GROUP BY 1 
             ) as ranktable
 	Where ranking2 < 4;
 
@@ -100,44 +98,3 @@ JOIN Products p ON s.Product_ID = p.Product_ID
 GROUP BY p.Product_Name
 ORDER BY SUM(s.Units * p.Product_Price) DESC
 LIMIT 3;
-
-
-  -- TOP3 DAYS SALES
-
-SELECT 
-  Date, 
-  CONCAT('MXN$ ', FORMAT(SUM(Units * Product_Price), 2)) AS total
-FROM Sales s
-JOIN Products p ON s.Product_ID = p.Product_ID
-GROUP BY Date
-ORDER BY SUM(Units * Product_Price) DESC
-LIMIT 3;
-
-
-with 
-top3days as (
-SELECT 
-  Date, 
-  CONCAT('MXN$ ', FORMAT(SUM(Units * Product_Price), 2)) AS total
-FROM Sales s
-JOIN Products p ON s.Product_ID = p.Product_ID
-GROUP BY Date
-ORDER BY SUM(Units * Product_Price) DESC
-LIMIT 3)
-
-
-
-SELECT sl.date, sl.Sale_ID, sl.Store_ID, sl.Units, st.Store_Name, (sl.Units*p.Product_Price) as total
-FROM	Sales sl
-left join stores st on sl.Store_ID = st.Store_ID
-left join products p on sl.Product_ID = p.Product_ID
-				 ;
-
-
-
-
-	SELECT s.Product_ID, p.Product_Name, CONCAT('MXN$ ', format(SUM(s.Units * p.Product_Price), 2 ) ) AS total_sales, sum(s.Units) as tUnits
-    FROM	Sales s
-    left join products p
-    on s.Product_ID = p.Product_ID
-    Group by 1, 2;
